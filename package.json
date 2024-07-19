@@ -1,0 +1,19 @@
+{
+    "name": "padel-tool",
+    "version": "0.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "dotenv": "^16.4.5",
+        "firebase": "^10.12.3",
+        "puppeteer": "^22.12.1"
+    },
+    "devDependencies": {
+        "prettier": "3.3.3"
+    }
+}
