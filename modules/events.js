@@ -1,7 +1,9 @@
 const { convertToEventDate } = require('./date-extraction');
+const { runInErrorContextAsync } = require('./errors');
 const Env = require('./env');
+const BookedEventsMemo = require('./booked-events-memo');
 
-const getEventsFromAddress = async (page, address) => {
+const getEventsBasicDataFromAddress = async (page, address) => {
     await page.goto(address);
 
     const eventElementHandles = await page.$$('#dataTables-wyzwania > tbody > tr');
@@ -20,21 +22,37 @@ const getEventsFromAddress = async (page, address) => {
         events.push({ title, link, date });
     }
 
-    for (const event of events) {
-        await assignEventDetails(page, event);
-    }
-
     return events;
 };
 
-const assignEventDetails = async (page, event) => {
-    await page.goto(event.link);
-    event.assigned = await isUserAssignedToEvent(page);
-    event.isSlotAvailable = await isSlotAvailable(page);
-    event.details = await getEventDetails(page);
+const getEventsDetails = async (page, events) => {
+    const eventsWithDetails = [];
+
+    for (const event of events) {
+        const details = await runInErrorContextAsync(
+            async () => await getEventDetails(page, event),
+            {
+                event,
+            },
+        );
+        eventsWithDetails.push(details);
+    }
+
+    return eventsWithDetails;
 };
 
-const getEventDetails = async page => {
+const getEventDetails = async (page, event) => {
+    await page.goto(event.link);
+
+    return {
+        ...event,
+        assigned: await isUserAssignedToEvent(page),
+        isSlotAvailable: await isSlotAvailable(page),
+        details: await getEventDescription(page),
+    };
+};
+
+const getEventDescription = async page => {
     const fullDetailsHandle = await page.$('body > div:nth-child(7) > div > div.col-md-8');
     const fullDetails = await page.evaluate(element => element.innerText, fullDetailsHandle);
     return fullDetails;
@@ -69,32 +87,39 @@ const isSlotAvailable = async page => {
 
 const bookEvents = async (events, page) => {
     for (const event of events) {
-        await page.goto(event.link);
-        await page.locator('form button[type=submit]').click();
+        await runInErrorContextAsync(async () => {
+            await page.goto(event.link);
+            await page.locator('form button[type=submit]').click();
+            BookedEventsMemo.addEvent(event);
+        });
     }
 };
 
 const getEventsInGdynia = async page => {
-    const events = await getEventsFromAddress(
-        page,
-        'https://kluby.org/gdynia-padel-club/wydarzenia?typ_wydarzenia=3',
-    );
+    return runInErrorContextAsync(async () => {
+        const events = await getEventsBasicDataFromAddress(
+            page,
+            'https://kluby.org/gdynia-padel-club/wydarzenia?typ_wydarzenia=3',
+        );
 
-    return events.map(event => ({ ...event, place: 'Gdynia' }));
+        return events.map(event => ({ ...event, place: 'Gdynia' }));
+    });
 };
 
 const getEventsInGdansk = async page => {
-    const events = await getEventsFromAddress(
-        page,
-        'https://kluby.org/padbox/wydarzenia?typ_wydarzenia=3',
-    );
+    return runInErrorContextAsync(async () => {
+        const events = await getEventsBasicDataFromAddress(
+            page,
+            'https://kluby.org/padbox/wydarzenia?typ_wydarzenia=3',
+        );
 
-    return events.map(event => ({ ...event, place: 'Gdansk' }));
+        return events.map(event => ({ ...event, place: 'Gdansk' }));
+    });
 };
 
 module.exports = {
-    getEventsFromAddress,
     bookEvents,
     getEventsInGdynia,
     getEventsInGdansk,
+    getEventsDetails,
 };
