@@ -14,6 +14,7 @@ A script to sign up for selected Padel classes and events in tri-city locations 
 ```typescript
 {
     enabled: boolean,
+    multi: boolean, // Optional, default = false
     conditions: {
         dayOfWeek: number,
         place: string,

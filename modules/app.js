@@ -30,15 +30,45 @@ const runAssignmentProcess = async page => {
     const eventsBasicData = await getEventsBasicData(page);
     const filteredEvents = filterEventByBasicData(eventsBasicData, rules);
     const eventsDetails = await getEventsDetails(page, filteredEvents);
-    const filteredEventDetails = filterEventsMatchingRules(eventsDetails, rules);
+    const filteredEventDetails = filterEventsBySingleRulePrinciple(
+        filterEventsMatchingRules(eventsDetails, rules),
+        rules,
+    );
 
-    await bookEventsWithRestrictions(filteredEventDetails, page);
+    await bookEventsUsingLocationRestriction(filteredEventDetails, page);
+};
+
+/**
+ * Prevent booking multiple events for the same rule unless it's allowed by the 'multi' flag.
+ */
+const filterEventsBySingleRulePrinciple = (events, rules) => {
+    const filteredEvents = new Set();
+
+    for (const rule of rules) {
+        const eventsForRule = filterEventsMatchingRules(events, [rule]);
+
+        if (rule.multi) {
+            for (const event of eventsForRule) {
+                filteredEvents.add(event);
+            }
+        } else {
+            const isAnyEventForRuleBooked = eventsForRule.some(event => event.assigned);
+            if (!isAnyEventForRuleBooked) {
+                const availableEvent = eventsForRule.find(
+                    event => !event.assigned && event.isSlotAvailable,
+                );
+                if (availableEvent) filteredEvents.add(availableEvent);
+            }
+        }
+    }
+
+    return Array.from(filteredEvents);
 };
 
 /**
  * Book events only in one location per day.
  */
-const bookEventsWithRestrictions = async (events, page) => {
+const bookEventsUsingLocationRestriction = async (events, page) => {
     const eventsByDate = groupBy(events, event => event.date);
 
     for (const event of events) {
