@@ -36,7 +36,7 @@ const getEventDescription = async page => {
 };
 
 const isUserAssignedToEvent = async page => {
-    const userName = Env.get('USER_NAME');
+    const userName = Env.get('KLUBY_USER_NAME');
     const assignedHandles = await page.$$(
         'body > div:nth-child(7) > div > div.col-md-8 > div.list-group > div.list-group-item',
     );
