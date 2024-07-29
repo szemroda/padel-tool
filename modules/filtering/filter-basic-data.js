@@ -2,7 +2,6 @@ const {
     isTextMatchingPatterns,
     isEventMatchingPlace,
     isEventDateMatchingDayOfWeek,
-    isEventBooked,
 } = require('./checks');
 const { runInErrorContext } = require('../utils');
 
@@ -29,7 +28,6 @@ const filterEventByBasicData = (events, rules) => {
 
 const isEventBasicDataMatchingRule = (event, rule) => {
     return (
-        !isEventBooked(event) &&
         isEventMatchingPlace(event, rule.conditions.place) &&
         isEventDateMatchingDayOfWeek(event.date, rule.conditions.dayOfWeek) &&
         isTextMatchingPatterns(event.title, rule.conditions.titlePatterns)

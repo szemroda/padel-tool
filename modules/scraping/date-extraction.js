@@ -26,7 +26,9 @@ const getEventDateString = text => {
     return text.match(/(Termin:) (\d+ .* \d{4})/)[2]?.trim() ?? '';
 };
 
-const convertToEventDate = str => convertDateStringToDate(getEventDateString(str));
+const convertToEventDate = str => {
+    return convertDateStringToDate(getEventDateString(str));
+};
 
 module.exports = {
     convertToEventDate,

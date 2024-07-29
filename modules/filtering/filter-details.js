@@ -1,4 +1,4 @@
-const { isTextMatchingPatterns, isEventAvailable } = require('./checks');
+const { isTextMatchingPatterns } = require('./checks');
 const { filterEventByBasicData } = require('./filter-basic-data');
 const { runInErrorContext } = require('../utils');
 
@@ -25,10 +25,7 @@ const filterEventsMatchingRules = (events, rules) => {
 };
 
 const isEventMatchingRule = (event, rule) => {
-    return (
-        isEventAvailable(event) &&
-        isTextMatchingPatterns(event.details, rule.conditions.descriptionPatterns)
-    );
+    return isTextMatchingPatterns(event.details, rule.conditions.descriptionPatterns);
 };
 
 module.exports = {

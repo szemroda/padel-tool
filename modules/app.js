@@ -1,8 +1,8 @@
 const { getEnabledRules } = require('./db');
-const { authenticate, getEventsBasicData, getEventsDetails, bookEvents } = require('./scraping');
+const { authenticate, getEventsBasicData, getEventsDetails, bookEvent } = require('./scraping');
 const { initializeBrowser, closeBrowser } = require('./browser');
 const { filterEventByBasicData, filterEventsMatchingRules } = require('./filtering');
-const { Logger, Env } = require('./utils');
+const { Logger, Env, groupBy } = require('./utils');
 
 const main = async () => {
     try {
@@ -30,9 +30,32 @@ const runAssignmentProcess = async page => {
     const eventsBasicData = await getEventsBasicData(page);
     const filteredEvents = filterEventByBasicData(eventsBasicData, rules);
     const eventsDetails = await getEventsDetails(page, filteredEvents);
-    const eventsToBook = filterEventsMatchingRules(eventsDetails, rules);
+    const filteredEventDetails = filterEventsMatchingRules(eventsDetails, rules);
 
-    bookEvents(eventsToBook, page);
+    await bookEventsWithRestrictions(filteredEventDetails, page);
+};
+
+/**
+ * Book events only in one location per day.
+ */
+const bookEventsWithRestrictions = async (events, page) => {
+    const eventsByDate = groupBy(events, event => event.date);
+
+    for (const event of events) {
+        const eventsFromTheSameDate = eventsByDate[event.date];
+        const isAnyEventFromTheSameDateBookedInDifferentLocation =
+            eventsFromTheSameDate.length > 0 &&
+            eventsFromTheSameDate.some(e => e.assigned && e.place !== event.place);
+        const canBookEvent =
+            !isAnyEventFromTheSameDateBookedInDifferentLocation &&
+            event.isSlotAvailable &&
+            !event.assigned;
+
+        if (canBookEvent) {
+            await bookEvent(event, page);
+            event.assigned = true;
+        }
+    }
 };
 
 const scheduleNextEvaluation = () => {
