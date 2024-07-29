@@ -8,3 +8,17 @@ A script to sign up for selected Padel classes and events in tri-city locations 
 - node.js - executing scripts
 - firebase - storing data with rules for the desired classes
 - docker - deployment, containerization
+
+## Supported Rule schema
+
+```typescript
+{
+    enabled: boolean,
+    conditions: {
+        dayOfWeek: number,
+        place: string,
+        titlePatterns: string[],
+        descriptionPatterns: string[], // Optional
+    }
+}
+```

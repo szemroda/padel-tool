@@ -3,9 +3,7 @@ const runInErrorContextAsync = async (fn, ctxData) => {
         const res = await fn();
         return res;
     } catch (error) {
-        throw new Error(`${error.message}. ${getCtxDataString(ctxData)}`, {
-            cause: error,
-        });
+        forwardError(error, ctxData);
     }
 };
 
@@ -13,10 +11,14 @@ const runInErrorContext = (fn, ctxData) => {
     try {
         return fn();
     } catch (error) {
-        throw new Error(`${error.message} ${getCtxDataString(ctxData)}`, {
-            cause: error,
-        });
+        forwardError(error, ctxData);
     }
+};
+
+const forwardError = (error, ctxData) => {
+    throw new Error(`${error.message} ${getCtxDataString(ctxData)}`, {
+        cause: error,
+    });
 };
 
 const getCtxDataString = ctxData => {

@@ -1,5 +1,4 @@
-const Env = require('./env');
-const { runInErrorContextAsync } = require('./errors');
+const { Logger, Env, runInErrorContextAsync } = require('../utils');
 
 const authenticate = async page => {
     await runInErrorContextAsync(async () => {
@@ -13,6 +12,8 @@ const authenticate = async page => {
             )
             .click();
         await page.waitForNavigation({ waitUntil: 'networkidle0' });
+
+        Logger.debug('Authenticated');
     });
 };
 
