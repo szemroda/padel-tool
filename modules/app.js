@@ -16,7 +16,6 @@ const main = async () => {
 
 const executeWorkflow = async () => {
     const { browser, page } = await initializeBrowser();
-    await authenticate(page);
     await runAssignmentProcess(page);
     await closeBrowser(browser);
 };
@@ -29,6 +28,11 @@ const runAssignmentProcess = async page => {
 
     const eventsBasicData = await getEventsBasicData(page);
     const filteredEvents = filterEventByBasicData(eventsBasicData, rules);
+
+    if (filteredEvents.length === 0) return;
+
+    // To check event details and book events we need to authenticate first.
+    await authenticate(page);
     const eventsDetails = await getEventsDetails(page, filteredEvents);
     const filteredEventDetails = filterEventsBySingleRulePrinciple(
         filterEventsMatchingRules(eventsDetails, rules),
