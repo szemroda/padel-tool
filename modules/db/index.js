@@ -1,5 +1,5 @@
-const { initializeApp, deleteApp } = require('firebase/app');
-const { getDatabase, ref, get } = require('firebase/database');
+const { initializeApp } = require('firebase/app');
+const { getDatabase, ref, onValue } = require('firebase/database');
 const { Env, Logger } = require('../utils');
 
 const firebaseConfig = {
@@ -7,22 +7,18 @@ const firebaseConfig = {
     databaseURL: Env.get('FIREBASE_DATABASE_URL'),
 };
 
-const getRules = async () => {
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const rulesRef = ref(db, Env.get('FIREBASE_RULES_PATH'));
-    const snapshot = await get(rulesRef);
-    await deleteApp(app);
+let rules = [];
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const rulesRef = ref(db, Env.get('FIREBASE_RULES_PATH'));
 
-    if (snapshot.exists()) {
-        return snapshot.val();
-    }
+onValue(rulesRef, snapshot => {
+    rules = snapshot.val() ?? [];
 
-    return [];
-};
+    Logger.debug(`New rules fetched (${rules.length}).`);
+});
 
-const getEnabledRules = async () => {
-    const rules = await getRules();
+const getEnabledRules = () => {
     const enabledRules = rules.filter(rule => rule.enabled);
 
     Logger.debug(`Total rules: ${rules.length}. Enabled rules: ${enabledRules.length}`);

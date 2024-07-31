@@ -21,7 +21,7 @@ const executeWorkflow = async () => {
 };
 
 const runAssignmentProcess = async page => {
-    const rules = await getEnabledRules();
+    const rules = getEnabledRules();
     if (rules.length === 0) {
         return;
     }
