@@ -9,6 +9,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "dayjs": "^1.11.12",
         "dotenv": "^16.4.5",
         "firebase": "^10.12.3",
         "puppeteer": "^22.12.1"

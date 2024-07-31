@@ -13,7 +13,7 @@ A script to sign up for selected Padel classes and events in tri-city locations 
 
 ```typescript
 {
-    enabled: boolean,
+    enabled: boolean | string, // It supports string as a Date in YYYY-MM-DD format. The date indicates when the rule becomes active.
     multi: boolean, // Optional, default = false
     conditions: {
         dayOfWeek: number,
