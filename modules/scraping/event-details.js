@@ -54,7 +54,10 @@ const isSlotAvailable = async page => {
     const handles = await page.$$('.alert.alert-warning');
     for (const handle of handles) {
         const text = await page.evaluate(element => element.innerText, handle);
-        if (text.includes('Limit zgłoszeń został wyczerpany')) {
+        if (
+            text.includes('Limit zgłoszeń został wyczerpany') ||
+            text.includes('Zgłoszenie zostało już przesłane') // Cannot determine if this is a slot available or not
+        ) {
             return false;
         }
     }
