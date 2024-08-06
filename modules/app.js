@@ -1,4 +1,4 @@
-const { getEnabledRules } = require('./db');
+const { getEnabledRules } = require('./rules');
 const { authenticate, getEventsBasicData, getEventsDetails, bookEvent } = require('./scraping');
 const { initializeBrowser, closeBrowser } = require('./browser');
 const { filterEventByBasicData, filterEventsMatchingRules } = require('./filtering');
