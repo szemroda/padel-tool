@@ -8,25 +8,25 @@ RUN apt-get update \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
+# Add user
+RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
+    && mkdir -p /home/pptruser/Downloads
+
 # Set the working directory in the container
-WORKDIR /
+WORKDIR /home/pptruser
 
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
-# Install app dependencies
+# Install app dependencies and change the ownership of the node_modules directory
 RUN npm ci
-
-# Add user so we don't need --no-sandbox.
-RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
-    && mkdir -p /home/pptruser/Downloads \
-    && chown -R pptruser:pptruser /home/pptruser \
-    && chown -R pptruser:pptruser /node_modules \
-    && chown -R pptruser:pptruser /package.json \
-    && chown -R pptruser:pptruser /package-lock.json
+RUN chown -R pptruser:pptruser /home/pptruser/node_modules
 
 # Copy the rest of the app source code to the working directory
 COPY . .
+
+# Change the ownership of the app files excluding node_modules
+RUN find /home/pptruser -path /home/pptruser/node_modules -prune -o -exec chown pptruser:pptruser {} +
 
 USER pptruser
 

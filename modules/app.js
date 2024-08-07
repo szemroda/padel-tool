@@ -3,6 +3,7 @@ const { authenticate, getEventsBasicData, getEventsDetails, bookEvent } = requir
 const { initializeBrowser, closeBrowser } = require('./browser');
 const { filterEventByBasicData, filterEventsMatchingRules } = require('./filtering');
 const { Logger, Env, groupBy } = require('./utils');
+const { BookedEventsStorage } = require('./storage');
 
 const main = async () => {
     try {
@@ -33,7 +34,7 @@ const runAssignmentProcess = async page => {
 
     // To check event details and book events we need to authenticate first.
     await authenticate(page);
-    const eventsDetails = await getEventsDetails(page, filteredEvents);
+    const eventsDetails = attachStoredDataToEvents(await getEventsDetails(page, filteredEvents));
     const eventsDetailsMatchingRules = filterEventsMatchingRules(eventsDetails, rules);
     Logger.debug(
         `Events matching rules: \n\t${eventsDetailsMatchingRules.map(e => `[${e.date}] ${e.link} - assigned ${e.assigned}, slot available: ${e.isSlotAvailable}`).join('\n\t')}`,
@@ -44,6 +45,16 @@ const runAssignmentProcess = async page => {
     );
 
     await bookEventsUsingLocationRestriction(filteredEventDetails, page);
+};
+
+const attachStoredDataToEvents = events => {
+    BookedEventsStorage.addMany(events.filter(event => event.assigned));
+    const eventsToUpdate = events.map(event => ({ ...event }));
+    const bookedEvents = BookedEventsStorage.get();
+    for (const event of eventsToUpdate) {
+        event.assigned = event.assigned || bookedEvents.includes(event.link.trim());
+    }
+    return eventsToUpdate;
 };
 
 /**
@@ -90,9 +101,21 @@ const bookEventsUsingLocationRestriction = async (events, page) => {
             !event.assigned;
 
         if (canBookEvent) {
-            await bookEvent(event, page);
-            event.assigned = true;
+            executeEventBooking(event, page);
         }
+    }
+};
+
+const executeEventBooking = async (event, page) => {
+    try {
+        await bookEvent(event, page);
+    } catch (error) {
+        throw error;
+    } finally {
+        // Even if booking fails, mark the event as assigned to prevent further attempts.
+        // It's important to avoid booking the same event multiple times!
+        BookedEventsStorage.add(event);
+        event.assigned = true;
     }
 };
 
