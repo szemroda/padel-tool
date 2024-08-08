@@ -50,9 +50,9 @@ const runAssignmentProcess = async page => {
 const attachStoredDataToEvents = events => {
     BookedEventsStorage.addMany(events.filter(event => event.assigned));
     const eventsToUpdate = events.map(event => ({ ...event }));
-    const bookedEvents = BookedEventsStorage.get();
+    const bookedEvents = new Set(BookedEventsStorage.get());
     for (const event of eventsToUpdate) {
-        event.assigned = event.assigned || bookedEvents.includes(event.link.trim());
+        event.assigned = event.assigned || bookedEvents.has(event.link.trim());
     }
     return eventsToUpdate;
 };
