@@ -110,7 +110,8 @@ const executeEventBooking = async (event, page) => {
     try {
         await bookEvent(event, page);
     } catch (error) {
-        throw error;
+        // Log the error but don't throw it to prevent stopping the booking events process.
+        Logger.error(`${error}\n${error.stack}`);
     } finally {
         // Even if booking fails, mark the event as assigned to prevent further attempts.
         // It's important to avoid booking the same event multiple times!
