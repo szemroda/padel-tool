@@ -101,7 +101,7 @@ const bookEventsUsingLocationRestriction = async (events, page) => {
             !event.assigned;
 
         if (canBookEvent) {
-            executeEventBooking(event, page);
+            await executeEventBooking(event, page);
         }
     }
 };
