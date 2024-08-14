@@ -1,7 +1,14 @@
 const isTextMatchingPatterns = (text, patterns) =>
     !patterns ||
     patterns.length === 0 ||
-    patterns.every(pattern => new RegExp(pattern, 'gmi').test(text));
+    patterns.every(pattern => isTextMatchingPattern(text, pattern));
+
+const isTextMatchingPattern = (text, pattern) => {
+    if (typeof pattern === 'string') return new RegExp(pattern, 'gmi').test(text);
+
+    const isMatchingPattern = new RegExp(pattern.pattern, 'gmi').test(text);
+    return pattern.negated ? !isMatchingPattern : isMatchingPattern;
+};
 
 const isEventDateMatchingDayOfWeek = (date, dayOfWeek) => new Date(date).getDay() === dayOfWeek;
 

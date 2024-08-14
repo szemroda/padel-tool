@@ -18,8 +18,8 @@ A script to sign up for selected Padel classes and events in tri-city locations 
     conditions: {
         dayOfWeek: number,
         place: string,
-        titlePatterns: string[],
-        descriptionPatterns: string[], // Optional
+        titlePatterns: (string | {negated: boolean; pattern: string})[],
+        descriptionPatterns: (string | {negated: boolean; pattern: string})[], // Optional
     }
 }
 ```
