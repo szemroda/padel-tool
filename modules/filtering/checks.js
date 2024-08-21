@@ -10,7 +10,13 @@ const isTextMatchingPattern = (text, pattern) => {
     return pattern.negated ? !isMatchingPattern : isMatchingPattern;
 };
 
-const isEventDateMatchingDayOfWeek = (date, dayOfWeek) => new Date(date).getDay() === dayOfWeek;
+const isEventDateMatchingDayOfWeek = (date, dayOfWeek) => {
+    if (Array.isArray(dayOfWeek)) return dayOfWeek.some(day => isDateMatchingDayOfWeek(date, day));
+
+    return isDateMatchingDayOfWeek(date, dayOfWeek);
+};
+
+const isDateMatchingDayOfWeek = (date, dayOfWeek) => new Date(date).getDay() === dayOfWeek;
 
 const isEventMatchingPlace = (event, place) => event.place === place;
 

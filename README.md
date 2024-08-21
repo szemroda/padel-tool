@@ -16,7 +16,7 @@ A script to sign up for selected Padel classes and events in tri-city locations 
     enabled: boolean | string, // It supports string as a Date in YYYY-MM-DD format. The date indicates when the rule becomes active.
     multi: boolean, // Optional, default = false
     conditions: {
-        dayOfWeek: number,
+        dayOfWeek: number | number[],
         place: string,
         titlePatterns: (string | {negated: boolean; pattern: string})[],
         descriptionPatterns: (string | {negated: boolean; pattern: string})[], // Optional
