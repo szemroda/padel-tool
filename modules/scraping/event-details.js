@@ -1,32 +1,19 @@
-const { Logger, Env, runInErrorContextAsync } = require('../utils');
-
-const getEventsDetails = async (page, events) => {
-    const eventsWithDetails = [];
-
-    for (const event of events) {
-        const details = await runInErrorContextAsync(
-            async () => await getEventDetails(page, event),
-            {
-                event,
-            },
-        );
-        eventsWithDetails.push(details);
-    }
-
-    Logger.debug(`Found events with details: ${eventsWithDetails.length}`);
-
-    return eventsWithDetails;
-};
+const { Env, runInErrorContextAsync } = require('../utils');
 
 const getEventDetails = async (page, event) => {
-    await page.goto(event.link);
+    return await runInErrorContextAsync(
+        async () => {
+            await page.goto(event.link);
 
-    return {
-        ...event,
-        assigned: await isUserAssignedToEvent(page),
-        isSlotAvailable: await isSlotAvailable(page),
-        details: await getEventDescription(page),
-    };
+            return {
+                ...event,
+                assigned: await isUserAssignedToEvent(page),
+                isSlotAvailable: await isSlotAvailable(page),
+                details: await getEventDescription(page),
+            };
+        },
+        { event },
+    );
 };
 
 const getEventDescription = async page => {
@@ -66,5 +53,5 @@ const isSlotAvailable = async page => {
 };
 
 module.exports = {
-    getEventsDetails,
+    getEventDetails,
 };

@@ -1,24 +1,30 @@
 const { getEnabledRules } = require('./rules');
-const { authenticate, getEventsBasicData, getEventsDetails, bookEvent } = require('./scraping');
+const { authenticate, getEventsBasicData, getEventDetails, bookEvent } = require('./scraping');
 const { initializeBrowser, closeBrowser } = require('./browser');
 const { filterEventByBasicData, filterEventsMatchingRules } = require('./filtering');
 const { Logger, Env, groupBy } = require('./utils');
 const { BookedEventsStorage } = require('./storage');
 
 const main = async () => {
+    await safeExecute(executeWorkflow, scheduleNextEvaluation);
+};
+
+const safeExecute = async (fn, finallyFn = () => {}) => {
     try {
-        await executeWorkflow();
+        await fn();
     } catch (error) {
         Logger.error(`${error}\n${error.stack}`);
     } finally {
-        scheduleNextEvaluation();
+        await finallyFn();
     }
 };
 
 const executeWorkflow = async () => {
     const { browser, page } = await initializeBrowser();
-    await runAssignmentProcess(page);
-    await closeBrowser(browser);
+    await safeExecute(
+        () => runAssignmentProcess(page),
+        () => closeBrowser(browser),
+    );
 };
 
 const runAssignmentProcess = async page => {
@@ -45,6 +51,22 @@ const runAssignmentProcess = async page => {
     );
 
     await bookEventsUsingLocationRestriction(filteredEventDetails, page);
+};
+
+const getEventsDetails = async (page, events) => {
+    const eventsWithDetails = [];
+
+    for (const event of events) {
+        // When an error occurs during event details retrieval, we don't want to stop the whole process, just omit the event.
+        await safeExecute(async () => {
+            const details = await getEventDetails(page, event);
+            eventsWithDetails.push(details);
+        });
+    }
+
+    Logger.debug(`Found events with details: ${eventsWithDetails.length}`);
+
+    return eventsWithDetails;
 };
 
 const attachStoredDataToEvents = events => {
@@ -107,17 +129,15 @@ const bookEventsUsingLocationRestriction = async (events, page) => {
 };
 
 const executeEventBooking = async (event, page) => {
-    try {
-        await bookEvent(event, page);
-    } catch (error) {
-        // Log the error but don't throw it to prevent stopping the booking events process.
-        Logger.error(`${error}\n${error.stack}`);
-    } finally {
-        // Even if booking fails, mark the event as assigned to prevent further attempts.
-        // It's important to avoid booking the same event multiple times!
-        BookedEventsStorage.add(event);
-        event.assigned = true;
-    }
+    await safeExecute(
+        () => bookEvent(event, page),
+        () => {
+            // Even if booking fails, mark the event as assigned to prevent further attempts.
+            // It's important to avoid booking the same event multiple times!
+            BookedEventsStorage.add(event);
+            event.assigned = true;
+        },
+    );
 };
 
 const scheduleNextEvaluation = () => {
