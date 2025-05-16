@@ -1,5 +1,5 @@
-# Use the official Node.js image as the base image
-FROM node:18-slim
+FROM node:18-slim AS base
+
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 # Install Chromium and fonts to support major charsets (Chinese, Japanese, Arabic, Hebrew, Thai and others)
@@ -15,11 +15,19 @@ RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
 # Set the working directory in the container
 WORKDIR /home/pptruser
 
-# Copy package.json and package-lock.json to the working directory
+
+
+
+FROM base AS install
 COPY package*.json ./
 
 # Install app dependencies and change the ownership of the node_modules directory
 RUN npm ci
+
+
+
+FROM base AS prerelease
+COPY --from=install /home/pptruser/node_modules ./node_modules
 RUN chown -R pptruser:pptruser /home/pptruser/node_modules
 
 # Copy the rest of the app source code to the working directory
@@ -28,7 +36,11 @@ COPY . .
 # Change the ownership of the app files excluding node_modules
 RUN find /home/pptruser -path /home/pptruser/node_modules -prune -o -exec chown pptruser:pptruser {} +
 
+
+
+
+FROM prerelease AS run
 USER pptruser
 
 # Start the app
-CMD [ "npm", "start" ]
+ENTRYPOINT [ "npm", "start" ]
