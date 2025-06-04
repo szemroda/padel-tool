@@ -2,6 +2,7 @@ const {
     isTextMatchingPatterns,
     isEventMatchingPlace,
     isEventDateMatchingDayOfWeek,
+    isMatchingTimeSlot,
 } = require('./checks');
 const { runInErrorContext } = require('../utils');
 
@@ -29,8 +30,17 @@ const filterEventByBasicData = (events, rules) => {
 const isEventBasicDataMatchingRule = (event, rule) => {
     return (
         isEventMatchingPlace(event, rule.conditions.place) &&
-        isEventDateMatchingDayOfWeek(event.date, rule.conditions.dayOfWeek) &&
-        isTextMatchingPatterns(event.title, rule.conditions.titlePatterns)
+        isEventDateMatchingDayOfWeek(event.start, rule.conditions.dayOfWeek) &&
+        isTextMatchingPatterns(event.title, rule.conditions.titlePatterns) &&
+        isMatchingTimeSlot(
+            { start: new Date(event.start), end: new Date(event.end) },
+            rule.conditions.timeSlot
+                ? {
+                      start: rule.conditions.timeSlot.start,
+                      end: rule.conditions.timeSlot.end,
+                  }
+                : null,
+        )
     );
 };
 

@@ -41,14 +41,10 @@ const runAssignmentProcess = async page => {
     // To check event details and book events we need to authenticate first.
     await authenticate(page);
     const eventsDetails = attachStoredDataToEvents(await getEventsDetails(page, filteredEvents));
-    const eventsDetailsMatchingRules = filterEventsMatchingRules(eventsDetails, rules);
     Logger.debug(
-        `Events matching rules: \n\t${eventsDetailsMatchingRules.map(e => `[${e.date}] ${e.link} - assigned ${e.assigned}, slot available: ${e.isSlotAvailable}`).join('\n\t')}`,
+        `Event details: \n\t${eventsDetails.map(e => `[${e.start}] ${e.link} - assigned ${e.assigned}, slot available: ${e.isSlotAvailable}`).join('\n\t')}`,
     );
-    const filteredEventDetails = filterEventsBySingleRulePrinciple(
-        eventsDetailsMatchingRules,
-        rules,
-    );
+    const filteredEventDetails = filterEventsBySingleRulePrinciple(eventsDetails, rules);
 
     await bookEventsUsingLocationRestriction(filteredEventDetails, page);
 };

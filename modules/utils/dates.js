@@ -13,4 +13,6 @@ const createDateComparator = date => {
 
 const isValidDate = date => dayjs(date).isValid();
 
-module.exports = { createDateComparator, isValidDate };
+const addDays = (date, days) => dayjs(date).add(days, 'day').toDate();
+
+module.exports = { createDateComparator, isValidDate, addDays };

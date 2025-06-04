@@ -2,7 +2,7 @@ const Env = require('./env');
 const Logger = require('./logger');
 const { runInErrorContext, runInErrorContextAsync } = require('./errors');
 const { groupBy } = require('./group');
-const { createDateComparator, isValidDate } = require('./dates');
+const { createDateComparator, isValidDate, addDays } = require('./dates');
 
 module.exports = {
     Env,
@@ -12,4 +12,5 @@ module.exports = {
     groupBy,
     createDateComparator,
     isValidDate,
+    addDays,
 };

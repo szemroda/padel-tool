@@ -9,23 +9,16 @@ const getEventDetails = async (page, event) => {
                 ...event,
                 assigned: await isUserAssignedToEvent(page),
                 isSlotAvailable: await isSlotAvailable(page),
-                details: await getEventDescription(page),
             };
         },
         { event },
     );
 };
 
-const getEventDescription = async page => {
-    const fullDetailsHandle = await page.$('body > div:nth-child(7) > div > div.col-md-8');
-    const fullDetails = await page.evaluate(element => element.innerText, fullDetailsHandle);
-    return fullDetails;
-};
-
 const isUserAssignedToEvent = async page => {
     const userName = Env.get('KLUBY_USER_NAME');
     const assignedHandles = await page.$$(
-        'body > div:nth-child(7) > div > div.col-md-8 > div.list-group > div.list-group-item',
+        'body > div:nth-child(7) > div > div > div:nth-child(4) > a',
     );
     for (const handle of assignedHandles) {
         const text = await page.evaluate(element => element.innerText, handle);
@@ -38,18 +31,16 @@ const isUserAssignedToEvent = async page => {
 };
 
 const isSlotAvailable = async page => {
-    const handles = await page.$$('.alert.alert-warning');
-    for (const handle of handles) {
-        const text = await page.evaluate(element => element.innerText, handle);
-        if (
-            text.includes('Limit zgłoszeń został wyczerpany') ||
-            text.includes('Zgłoszenie zostało już przesłane') // Cannot determine if this is a slot available or not
-        ) {
-            return false;
-        }
-    }
+    const element = await page.$(
+        'body > div:nth-child(7) > div > div > div:nth-child(2) > div:nth-child(2) > a',
+    );
+    const text = await page.evaluate(element => element.innerText, element);
+    const classes = await page.evaluate(element => Array.from(element.classList), element);
 
-    return true;
+    const isRegisterButton = text.toLowerCase().includes('rezerwuj');
+    const hasDisabledStatus = classes.some(x => x.includes('disabled'));
+
+    return isRegisterButton && !hasDisabledStatus;
 };
 
 module.exports = {
