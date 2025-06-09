@@ -4,7 +4,7 @@ const {
     isEventDateMatchingDayOfWeek,
     isMatchingTimeSlot,
 } = require('./checks');
-const { runInErrorContext } = require('../utils');
+const { runInErrorContext, createDateComparator, addDays } = require('../utils');
 
 const filterEventByBasicData = (events, rules) => {
     if (rules.length === 0 || events.length === 0) return [];
@@ -29,6 +29,7 @@ const filterEventByBasicData = (events, rules) => {
 
 const isEventBasicDataMatchingRule = (event, rule) => {
     return (
+        createDateComparator(addDays(new Date(), 1)).isSameOrBefore(event.start, 'day') && // Only events from tomorrow on
         isEventMatchingPlace(event, rule.conditions.place) &&
         isEventDateMatchingDayOfWeek(event.start, rule.conditions.dayOfWeek) &&
         isTextMatchingPatterns(event.title, rule.conditions.titlePatterns) &&
