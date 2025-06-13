@@ -17,9 +17,7 @@ const getEventDetails = async (page, event) => {
 
 const isUserAssignedToEvent = async page => {
     const userName = Env.get('KLUBY_USER_NAME');
-    const assignedHandles = await page.$$(
-        'body > div:nth-child(7) > div > div > div:nth-child(4) > a',
-    );
+    const assignedHandles = await page.$$('.list-group a');
     for (const handle of assignedHandles) {
         const text = await page.evaluate(element => element.innerText, handle);
         if (text.includes(userName)) {
@@ -31,16 +29,19 @@ const isUserAssignedToEvent = async page => {
 };
 
 const isSlotAvailable = async page => {
-    const element = await page.$(
-        'body > div:nth-child(7) > div > div > div:nth-child(2) > div:nth-child(2) > a',
-    );
-    const text = await page.evaluate(element => element.innerText, element);
-    const classes = await page.evaluate(element => Array.from(element.classList), element);
+    const elementHandles = await page.$$('a.btn');
+    for (const handle of elementHandles) {
+        const text = await page.evaluate(element => element.innerText, handle);
 
-    const isRegisterButton = text.toLowerCase().includes('rezerwuj');
-    const hasDisabledStatus = classes.some(x => x.includes('disabled'));
+        if (text.toLowerCase().trim() === 'rezerwuj') {
+            const classes = await page.evaluate(element => Array.from(element.classList), handle);
+            const hasDisabledStatus = classes.some(x => x.includes('disabled'));
+            return !hasDisabledStatus;
+        }
+    }
 
-    return isRegisterButton && !hasDisabledStatus;
+    Logger.error('No register button found!');
+    return false;
 };
 
 module.exports = {

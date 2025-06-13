@@ -91,7 +91,7 @@ const getEventsBasicDataFromAddress = async (page, address) => {
         const text = await page.evaluate(el => el.innerText || '', script);
 
         // Script performs calendar operations
-        if (text && text.includes('FullCalendar')) {
+        if (text && text.toLowerCase().includes('fullcalendar')) {
             const events = extractEventsData(text);
             return events.map(x => ({
                 ...x,
@@ -100,6 +100,9 @@ const getEventsBasicDataFromAddress = async (page, address) => {
             }));
         }
     }
+
+    Logger.debug(`No script with events found on address: ${address}`);
+    return [];
 };
 
 const adjustMonthFormat = jsMonth => (jsMonth < 9 ? `0${jsMonth + 1}` : `${jsMonth + 1}`);
@@ -113,18 +116,27 @@ const getEventsFromLocation = async (page, location) => {
         Gdynia: 'https://kluby.org/gdynia-padel-club/wydarzenia',
     };
 
-    return runInErrorContextAsync(async () => {
-        const thisWeekEvents = await getEventsBasicDataFromAddress(
-            page,
-            `${urls[location]}?widok_grafiku=plan_tygodnia&${getDateQueryParam(new Date())}`,
-        );
-        const nextWeekEvents = await getEventsBasicDataFromAddress(
-            page,
-            `${urls[location]}?widok_grafiku=plan_tygodnia&${getDateQueryParam(addDays(new Date(), 7))}`,
-        );
+    const thisWeekEventsUrl = `${urls[location]}?widok_grafiku=plan_tygodnia&${getDateQueryParam(new Date())}`;
+    const nextWeekEventsUrl = `${urls[location]}?widok_grafiku=plan_tygodnia&${getDateQueryParam(addDays(new Date(), 7))}`;
 
-        return thisWeekEvents.concat(nextWeekEvents).map(event => ({ ...event, place: location }));
-    });
+    const thisWeekEvents = await runInErrorContextAsync(
+        async () => {
+            return await getEventsBasicDataFromAddress(page, thisWeekEventsUrl);
+        },
+        { thisWeekEventsUrl },
+    );
+
+    const nextWeekEvents = await runInErrorContextAsync(
+        async () => {
+            return await getEventsBasicDataFromAddress(page, nextWeekEventsUrl);
+        },
+        { nextWeekEventsUrl },
+    );
+
+    return [...thisWeekEvents, ...nextWeekEvents].map(event => ({
+        ...event,
+        place: location,
+    }));
 };
 
 const getEventsBasicData = async page => {
