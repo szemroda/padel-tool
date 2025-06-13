@@ -98,6 +98,9 @@ const getEventsBasicDataFromAddress = async (page, address) => {
                 date: new Date(x.start).toLocaleDateString(),
                 link: `https://kluby.org${x.url}`.split('?')[0],
             }));
+        } else {
+            Logger.debug(`No events found in script on address: ${address}`);
+            return [];
         }
     }
 };
@@ -113,18 +116,27 @@ const getEventsFromLocation = async (page, location) => {
         Gdynia: 'https://kluby.org/gdynia-padel-club/wydarzenia',
     };
 
-    return runInErrorContextAsync(async () => {
-        const thisWeekEvents = await getEventsBasicDataFromAddress(
-            page,
-            `${urls[location]}?widok_grafiku=plan_tygodnia&${getDateQueryParam(new Date())}`,
-        );
-        const nextWeekEvents = await getEventsBasicDataFromAddress(
-            page,
-            `${urls[location]}?widok_grafiku=plan_tygodnia&${getDateQueryParam(addDays(new Date(), 7))}`,
-        );
+    const thisWeekEventsUrl = `${urls[location]}?widok_grafiku=plan_tygodnia&${getDateQueryParam(new Date())}`;
+    const nextWeekEventsUrl = `${urls[location]}?widok_grafiku=plan_tygodnia&${getDateQueryParam(addDays(new Date(), 7))}`;
 
-        return thisWeekEvents.concat(nextWeekEvents).map(event => ({ ...event, place: location }));
-    });
+    const thisWeekEvents = await runInErrorContextAsync(
+        async () => {
+            return await getEventsBasicDataFromAddress(page, thisWeekEventsUrl);
+        },
+        { thisWeekEventsUrl },
+    );
+
+    const nextWeekEvents = await runInErrorContextAsync(
+        async () => {
+            return await getEventsBasicDataFromAddress(page, nextWeekEventsUrl);
+        },
+        { nextWeekEventsUrl },
+    );
+
+    return [...thisWeekEvents, ...nextWeekEvents].map(event => ({
+        ...event,
+        place: location,
+    }));
 };
 
 const getEventsBasicData = async page => {
