@@ -1,4 +1,4 @@
-const { Env, runInErrorContextAsync } = require('../utils');
+const { Env, runInErrorContextAsync, Logger } = require('../utils');
 
 const getEventDetails = async (page, event) => {
     return await runInErrorContextAsync(
