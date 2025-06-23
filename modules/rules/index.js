@@ -1,6 +1,6 @@
-const { initializeApp } = require('firebase/app');
-const { getDatabase, ref, onValue } = require('firebase/database');
-const { Env, Logger, createDateComparator, isValidDate } = require('../utils');
+import { initializeApp } from 'firebase/app';
+import { getDatabase, onValue, ref } from 'firebase/database';
+import { Env, Logger, createDateComparator, isValidDate } from '../utils/index.js';
 
 const firebaseConfig = {
     apiKey: Env.get('FIREBASE_API_KEY'),
@@ -38,4 +38,4 @@ const getEnabledRules = () => {
     return enabledRules;
 };
 
-module.exports = { getEnabledRules };
+export { getEnabledRules };

@@ -1,4 +1,4 @@
-const { Logger, Env, runInErrorContextAsync } = require('../utils');
+import { Env, Logger, runInErrorContextAsync } from '../utils/index.js';
 
 const authenticate = async page => {
     await runInErrorContextAsync(async () => {
@@ -17,4 +17,4 @@ const authenticate = async page => {
     });
 };
 
-module.exports = { authenticate };
+export { authenticate };

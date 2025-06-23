@@ -1,9 +1,9 @@
-const { getEnabledRules } = require('./rules');
-const { authenticate, getEventsBasicData, getEventDetails, bookEvent } = require('./scraping');
-const { initializeBrowser, closeBrowser } = require('./browser');
-const { filterEventByBasicData, filterEventsMatchingRules } = require('./filtering');
-const { Logger, Env, groupBy } = require('./utils');
-const { BookedEventsStorage } = require('./storage');
+import { closeBrowser, initializeBrowser } from './browser/index.js';
+import { filterEventByBasicData, filterEventsMatchingRules } from './filtering/index.js';
+import { getEnabledRules } from './rules/index.js';
+import { authenticate, bookEvent, getEventDetails, getEventsBasicData } from './scraping/index.js';
+import { BookedEventsStorage } from './storage/index.js';
+import { Env, groupBy, Logger } from './utils/index.js';
 
 const main = async () => {
     await safeExecute(executeWorkflow, scheduleNextEvaluation);
@@ -145,4 +145,4 @@ const scheduleNextEvaluation = () => {
     setTimeout(main, timeToNextEvaluation);
 };
 
-module.exports = { main };
+export { main };

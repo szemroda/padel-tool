@@ -1,6 +1,6 @@
-const fs = require('node:fs');
-const path = require('path');
-const { Env } = require('../utils');
+import fs from 'node:fs';
+import path from 'path';
+import { Env } from '../utils/index.js';
 
 const filePath = Env.get('BOOKED_EVENTS_STORAGE_PATH');
 
@@ -35,4 +35,4 @@ const BookedEventsStorage = {
     addMany: addBookedEvents,
 };
 
-module.exports = { BookedEventsStorage };
+export { BookedEventsStorage };

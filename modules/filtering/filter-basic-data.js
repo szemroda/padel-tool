@@ -1,10 +1,10 @@
-const {
-    isTextMatchingPatterns,
-    isEventMatchingPlace,
+import { addDays, createDateComparator, runInErrorContext } from '../utils/index.js';
+import {
     isEventDateMatchingDayOfWeek,
+    isEventMatchingPlace,
     isMatchingTimeSlot,
-} = require('./checks');
-const { runInErrorContext, createDateComparator, addDays } = require('../utils');
+    isTextMatchingPatterns,
+} from './checks.js';
 
 const filterEventByBasicData = (events, rules) => {
     if (rules.length === 0 || events.length === 0) return [];
@@ -45,4 +45,4 @@ const isEventBasicDataMatchingRule = (event, rule) => {
     );
 };
 
-module.exports = { filterEventByBasicData };
+export { filterEventByBasicData };

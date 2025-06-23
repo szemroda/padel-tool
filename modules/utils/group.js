@@ -7,4 +7,4 @@ const groupBy = (array, key) => {
     }, {});
 };
 
-module.exports = { groupBy };
+export { groupBy };

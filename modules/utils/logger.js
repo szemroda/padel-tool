@@ -1,4 +1,4 @@
-const Env = require('./env');
+import * as Env from './env.js';
 
 const getLogTimestamp = () => {
     const date = new Date();
@@ -16,4 +16,4 @@ const debug =
 
 const error = text => console.error(`[ERROR] {${getLogTimestamp()}} - ${text}`);
 
-module.exports = { debug, error };
+export { debug, error };

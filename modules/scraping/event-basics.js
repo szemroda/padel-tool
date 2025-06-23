@@ -1,4 +1,4 @@
-const { Logger, runInErrorContextAsync, addDays } = require('../utils');
+import { addDays, Logger, runInErrorContextAsync } from '../utils/index.js';
 
 function extractEventsData(text) {
     const eventsMarker = 'events: [';
@@ -150,6 +150,4 @@ const getEventsBasicData = async page => {
     return [...eventsGdynia, ...eventsGdansk];
 };
 
-module.exports = {
-    getEventsBasicData,
-};
+export { getEventsBasicData };

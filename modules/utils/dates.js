@@ -1,5 +1,5 @@
-const dayjs = require('dayjs');
-const isSameOrBefore = require('dayjs/plugin/isSameOrBefore');
+import dayjs from 'dayjs';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore.js';
 
 dayjs.extend(isSameOrBefore);
 
@@ -15,4 +15,4 @@ const isValidDate = date => dayjs(date).isValid();
 
 const addDays = (date, days) => dayjs(date).add(days, 'day').toDate();
 
-module.exports = { createDateComparator, isValidDate, addDays };
+export { addDays, createDateComparator, isValidDate };

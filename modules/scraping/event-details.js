@@ -1,4 +1,4 @@
-const { Env, runInErrorContextAsync } = require('../utils');
+import { Env, runInErrorContextAsync } from '../utils/index.js';
 
 const getEventDetails = async (page, event) => {
     return await runInErrorContextAsync(
@@ -43,6 +43,4 @@ const extractParticipantsNames = async (page, elements) => {
     return names;
 };
 
-module.exports = {
-    getEventDetails,
-};
+export { getEventDetails };

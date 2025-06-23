@@ -25,4 +25,4 @@ const getCtxDataString = ctxData => {
     return ctxData ? `Context data: ${JSON.stringify(ctxData)}.` : '';
 };
 
-module.exports = { runInErrorContext, runInErrorContextAsync };
+export { runInErrorContext, runInErrorContextAsync };

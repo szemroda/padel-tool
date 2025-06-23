@@ -1,9 +1,7 @@
-const { filterEventByBasicData } = require('./filter-basic-data');
+import { filterEventByBasicData } from './filter-basic-data.js';
 
 const filterEventsMatchingRules = (events, rules) => {
     return filterEventByBasicData(events, rules);
 };
 
-module.exports = {
-    filterEventsMatchingRules,
-};
+export { filterEventsMatchingRules };

@@ -1,5 +1,5 @@
-const puppeteer = require('puppeteer');
-const { Logger, Env } = require('../utils');
+import puppeteer from 'puppeteer';
+import { Env, Logger } from '../utils/index.js';
 
 const initializeBrowser = async () => {
     const browser = await puppeteer.launch({
@@ -20,4 +20,4 @@ const closeBrowser = async browser => {
     Logger.debug('Browser closed');
 };
 
-module.exports = { initializeBrowser, closeBrowser };
+export { closeBrowser, initializeBrowser };

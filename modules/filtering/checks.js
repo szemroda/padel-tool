@@ -58,9 +58,9 @@ const parseTime = timeString => {
     return { hours, minutes, seconds };
 };
 
-module.exports = {
-    isTextMatchingPatterns,
+export {
     isEventDateMatchingDayOfWeek,
     isEventMatchingPlace,
     isMatchingTimeSlot,
+    isTextMatchingPatterns,
 };

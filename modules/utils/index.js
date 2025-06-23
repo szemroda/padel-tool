@@ -1,16 +1,16 @@
-const Env = require('./env');
-const Logger = require('./logger');
-const { runInErrorContext, runInErrorContextAsync } = require('./errors');
-const { groupBy } = require('./group');
-const { createDateComparator, isValidDate, addDays } = require('./dates');
+import { addDays, createDateComparator, isValidDate } from './dates.js';
+import * as Env from './env.js';
+import { runInErrorContext, runInErrorContextAsync } from './errors.js';
+import { groupBy } from './group.js';
+import * as Logger from './logger.js';
 
-module.exports = {
+export {
+    addDays,
+    createDateComparator,
     Env,
+    groupBy,
+    isValidDate,
     Logger,
     runInErrorContext,
     runInErrorContextAsync,
-    groupBy,
-    createDateComparator,
-    isValidDate,
-    addDays,
 };

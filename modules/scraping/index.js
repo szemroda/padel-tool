@@ -1,11 +1,6 @@
-const { authenticate } = require('./auth');
-const { bookEvent } = require('./book');
-const { getEventDetails } = require('./event-details');
-const { getEventsBasicData } = require('./event-basics');
+import { authenticate } from './auth.js';
+import { bookEvent } from './book.js';
+import { getEventsBasicData } from './event-basics.js';
+import { getEventDetails } from './event-details.js';
 
-module.exports = {
-    authenticate,
-    bookEvent,
-    getEventDetails,
-    getEventsBasicData,
-};
+export { authenticate, bookEvent, getEventDetails, getEventsBasicData };

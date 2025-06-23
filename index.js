@@ -1,3 +1,3 @@
-const { main } = require('./modules/app');
+import { main } from './modules/app.js';
 
 main();

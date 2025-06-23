@@ -1,5 +1,5 @@
-const { Logger, runInErrorContextAsync } = require('../utils');
-const { get } = require('../utils/env');
+import { get } from '../utils/env.js';
+import { Logger, runInErrorContextAsync } from '../utils/index.js';
 
 const bookEvent = async (event, page) => {
     await runInErrorContextAsync(
@@ -33,6 +33,4 @@ const bookEvent = async (event, page) => {
     );
 };
 
-module.exports = {
-    bookEvent,
-};
+export { bookEvent };

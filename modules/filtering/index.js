@@ -1,4 +1,4 @@
-const { filterEventByBasicData } = require('./filter-basic-data');
-const { filterEventsMatchingRules } = require('./filter-details');
+import { filterEventByBasicData } from './filter-basic-data.js';
+import { filterEventsMatchingRules } from './filter-details.js';
 
-module.exports = { filterEventByBasicData, filterEventsMatchingRules };
+export { filterEventByBasicData, filterEventsMatchingRules };
