@@ -105,10 +105,10 @@ const getEventsBasicDataFromAddress = async (page, address) => {
     return [];
 };
 
-const adjustMonthFormat = jsMonth => (jsMonth < 9 ? `0${jsMonth + 1}` : `${jsMonth + 1}`);
+const useDateLeadingZeroFormat = num => (num < 10 ? `0${num}` : `${num}`);
 
 const getDateQueryParam = date =>
-    `data_grafiku=${date.getFullYear()}-${adjustMonthFormat(date.getMonth())}-${date.getDate()}`;
+    `data_grafiku=${date.getFullYear()}-${useDateLeadingZeroFormat(date.getMonth()+1)}-${useDateLeadingZeroFormat(date.getDate())}`;
 
 const getEventsFromLocation = async (page, location) => {
     const urls = {
