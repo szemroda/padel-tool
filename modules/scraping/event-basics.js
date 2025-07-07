@@ -1,4 +1,5 @@
-import { addDays, Logger } from '../utils/index.js';
+import { addDays } from '../utils/dates.js';
+import * as Logger from '../utils/logger.js';
 
 function extractEventsData(text) {
     const eventsMarker = 'events: [';
@@ -108,7 +109,7 @@ const getEventsBasicDataFromAddress = async (page, address) => {
 const useDateLeadingZeroFormat = num => (num < 10 ? `0${num}` : `${num}`);
 
 const getDateQueryParam = date =>
-    `data_grafiku=${date.getFullYear()}-${useDateLeadingZeroFormat(date.getMonth()+1)}-${useDateLeadingZeroFormat(date.getDate())}`;
+    `data_grafiku=${date.getFullYear()}-${useDateLeadingZeroFormat(date.getMonth() + 1)}-${useDateLeadingZeroFormat(date.getDate())}`;
 
 const getEventsFromLocation = async (page, location) => {
     const urls = {

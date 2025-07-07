@@ -1,8 +1,8 @@
-import { get } from '../utils/env.js';
-import { Logger } from '../utils/index.js';
+import * as Env from '../utils/env.js';
+import * as Logger from '../utils/logger.js';
 
 const bookEvent = async (event, page) => {
-    const discountOption = get('USE_DISCOUNT_CARD', 'false') === 'true' ? '329' : '';
+    const discountOption = Env.get('USE_DISCOUNT_CARD', 'false') === 'true' ? '329' : '';
 
     Logger.debug(`Booking event: ${event.link}`);
     await page.goto(`${event.link}/rezerwuj`);

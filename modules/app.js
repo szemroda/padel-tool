@@ -1,10 +1,16 @@
 import { TimeoutError } from 'puppeteer';
 import { closeBrowser, initializeBrowser } from './browser/index.js';
-import { filterEventByBasicData, filterEventsMatchingRules } from './filtering/index.js';
+import { filterEventByBasicData } from './filtering/filter-basic-data.js';
+import { filterEventsMatchingRules } from './filtering/filter-details.js';
 import { getEnabledRules } from './rules/index.js';
-import { authenticate, bookEvent, getEventDetails, getEventsBasicData } from './scraping/index.js';
+import { authenticate } from './scraping/auth.js';
+import { bookEvent } from './scraping/book.js';
+import { getEventsBasicData } from './scraping/event-basics.js';
+import { getEventDetails } from './scraping/event-details.js';
 import { BookedEventsStorage } from './storage/index.js';
-import { Env, groupBy, Logger } from './utils/index.js';
+import * as Env from './utils/env.js';
+import { groupBy } from './utils/group.js';
+import * as Logger from './utils/logger.js';
 
 const main = async () => {
     await safeExecute(executeWorkflow, scheduleNextEvaluation);

@@ -1,4 +1,4 @@
-import { Env } from '../utils/index.js';
+import * as Env from '../utils/env.js';
 
 const getEventDetails = async (page, event) => {
     const url = new URL(event.link);

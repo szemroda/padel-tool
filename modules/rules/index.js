@@ -1,6 +1,8 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, onValue, ref } from 'firebase/database';
-import { Env, Logger, createDateComparator, isValidDate } from '../utils/index.js';
+import { createDateComparator, isValidDate } from '../utils/dates.js';
+import * as Env from '../utils/env.js';
+import * as Logger from '../utils/logger.js';
 
 const firebaseConfig = {
     apiKey: Env.get('FIREBASE_API_KEY'),

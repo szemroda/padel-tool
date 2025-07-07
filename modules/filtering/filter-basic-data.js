@@ -1,4 +1,4 @@
-import { addDays, createDateComparator } from '../utils/index.js';
+import { addDays, createDateComparator } from '../utils/dates.js';
 import {
     isEventDateMatchingDayOfWeek,
     isEventMatchingPlace,
