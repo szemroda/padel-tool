@@ -1,3 +1,4 @@
+import { TimeoutError } from 'puppeteer';
 import { closeBrowser, initializeBrowser } from './browser/index.js';
 import { filterEventByBasicData, filterEventsMatchingRules } from './filtering/index.js';
 import { getEnabledRules } from './rules/index.js';
@@ -13,6 +14,11 @@ const safeExecute = async (fn, finallyFn = () => {}) => {
     try {
         await fn();
     } catch (error) {
+        if (error instanceof TimeoutError) {
+            Logger.warning(`Timeout error occurred. Skipping...`);
+            return;
+        }
+
         Logger.error(`${error}\n${error.stack}`);
     } finally {
         await finallyFn();
