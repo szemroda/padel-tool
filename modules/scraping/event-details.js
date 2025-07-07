@@ -1,30 +1,22 @@
-import { Env, runInErrorContextAsync } from '../utils/index.js';
+import { Env } from '../utils/index.js';
 
 const getEventDetails = async (page, event) => {
-    return await runInErrorContextAsync(
-        async () => {
-            const url = new URL(event.link);
-            const userName = Env.get('KLUBY_USER_NAME');
-            await page.goto(`${url.origin}${url.pathname}/uczestnicy`);
-            const badge = await page.$(`h4 span.badge`);
-            const [assigned, maxParticipants] = await page.evaluate(
-                x => x.innerText.split('/').map(x => parseInt(x.trim())),
-                badge,
-            );
-            const participants = await extractParticipantsNames(
-                page,
-                await page.$$(`.list-group a`),
-            );
-            const isUserAssigned = participants.some(x => x.includes(userName));
-
-            return {
-                ...event,
-                assigned: isUserAssigned,
-                isSlotAvailable: assigned < maxParticipants,
-            };
-        },
-        { event },
+    const url = new URL(event.link);
+    const userName = Env.get('KLUBY_USER_NAME');
+    await page.goto(`${url.origin}${url.pathname}/uczestnicy`);
+    const badge = await page.$(`h4 span.badge`);
+    const [assigned, maxParticipants] = await page.evaluate(
+        x => x.innerText.split('/').map(x => parseInt(x.trim())),
+        badge,
     );
+    const participants = await extractParticipantsNames(page, await page.$$(`.list-group a`));
+    const isUserAssigned = participants.some(x => x.includes(userName));
+
+    return {
+        ...event,
+        assigned: isUserAssigned,
+        isSlotAvailable: assigned < maxParticipants,
+    };
 };
 
 const extractParticipantsNames = async (page, elements) => {

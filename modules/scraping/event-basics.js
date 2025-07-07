@@ -1,4 +1,4 @@
-import { addDays, Logger, runInErrorContextAsync } from '../utils/index.js';
+import { addDays, Logger } from '../utils/index.js';
 
 function extractEventsData(text) {
     const eventsMarker = 'events: [';
@@ -119,19 +119,8 @@ const getEventsFromLocation = async (page, location) => {
     const thisWeekEventsUrl = `${urls[location]}?widok_grafiku=plan_tygodnia&${getDateQueryParam(new Date())}`;
     const nextWeekEventsUrl = `${urls[location]}?widok_grafiku=plan_tygodnia&${getDateQueryParam(addDays(new Date(), 7))}`;
 
-    const thisWeekEvents = await runInErrorContextAsync(
-        async () => {
-            return await getEventsBasicDataFromAddress(page, thisWeekEventsUrl);
-        },
-        { thisWeekEventsUrl },
-    );
-
-    const nextWeekEvents = await runInErrorContextAsync(
-        async () => {
-            return await getEventsBasicDataFromAddress(page, nextWeekEventsUrl);
-        },
-        { nextWeekEventsUrl },
-    );
+    const thisWeekEvents = await getEventsBasicDataFromAddress(page, thisWeekEventsUrl);
+    const nextWeekEvents = await getEventsBasicDataFromAddress(page, nextWeekEventsUrl);
 
     return [...thisWeekEvents, ...nextWeekEvents].map(event => ({
         ...event,

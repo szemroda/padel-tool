@@ -1,4 +1,4 @@
-import { addDays, createDateComparator, runInErrorContext } from '../utils/index.js';
+import { addDays, createDateComparator } from '../utils/index.js';
 import {
     isEventDateMatchingDayOfWeek,
     isEventMatchingPlace,
@@ -13,14 +13,9 @@ const filterEventByBasicData = (events, rules) => {
 
     for (const rule of rules) {
         for (const event of events) {
-            runInErrorContext(
-                () => {
-                    if (isEventBasicDataMatchingRule(event, rule)) {
-                        eventsMatchingRules.add(event);
-                    }
-                },
-                { event, rule },
-            );
+            if (isEventBasicDataMatchingRule(event, rule)) {
+                eventsMatchingRules.add(event);
+            }
         }
     }
 
