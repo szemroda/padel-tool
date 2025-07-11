@@ -84,6 +84,38 @@ function extractEventsData(text) {
     }
 }
 
+const extractParticipantData = htmlString => {
+    // This regex looks for a <span> tag with a class containing "badge".
+    // It then captures the two numbers separated by a slash inside that tag.
+    // (\d+) captures one or more digits.
+    const regex = /<span class="badge[^>]*>(\d+)\/(\d+)<\/span>/;
+
+    const match = htmlString.match(regex);
+
+    if (match && match.length === 3) {
+        // match[0] is the full matched string (e.g., <span...>3/4</span>)
+        // match[1] is the first captured group (the participants)
+        // match[2] is the second captured group (the total)
+        return {
+            participants: parseInt(match[1], 10),
+            total: parseInt(match[2], 10),
+        };
+    }
+
+    // Return null if no match was found
+    return null;
+};
+
+const extractIsSlotAvailable = htmlString => {
+    const participantData = extractParticipantData(htmlString);
+
+    if (!participantData) {
+        return undefined;
+    }
+
+    return participantData.participants < participantData.total;
+};
+
 const getEventsBasicDataFromAddress = async (page, address) => {
     await page.goto(address);
 
@@ -98,11 +130,12 @@ const getEventsBasicDataFromAddress = async (page, address) => {
                 ...x,
                 date: new Date(x.start).toLocaleDateString(),
                 link: `https://kluby.org${x.url}`.split('?')[0],
+                isSlotAvailable: extractIsSlotAvailable(x.description),
             }));
         }
     }
 
-    Logger.debug(`No script with events found on address: ${address}`);
+    Logger.warning(`No script tag with events found on address: ${address}`);
     return [];
 };
 

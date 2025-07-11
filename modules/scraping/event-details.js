@@ -5,17 +5,24 @@ const getEventDetails = async (page, event) => {
     const userName = Env.get('KLUBY_USER_NAME');
     await page.goto(`${url.origin}${url.pathname}/uczestnicy`);
     const badge = await page.$(`h4 span.badge`);
-    const [assigned, maxParticipants] = await page.evaluate(
-        x => x.innerText.split('/').map(x => parseInt(x.trim())),
-        badge,
-    );
+    const isSlotAvailable = await page.evaluate(participantsCountBadge => {
+        // Badge may not exist e.g. if there are no participants yet.
+        if (!participantsCountBadge) {
+            return undefined;
+        }
+
+        const [assigned, maxParticipants] = participantsCountBadge.innerText
+            .split('/')
+            .map(x => parseInt(x.trim()));
+        return assigned < maxParticipants;
+    }, badge);
     const participants = await extractParticipantsNames(page, await page.$$(`.list-group a`));
     const isUserAssigned = participants.some(x => x.includes(userName));
 
     return {
         ...event,
         assigned: isUserAssigned,
-        isSlotAvailable: assigned < maxParticipants,
+        isSlotAvailable: isSlotAvailable ?? event.isSlotAvailable ?? false,
     };
 };
 
