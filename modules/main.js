@@ -1,42 +1,26 @@
 import { TimeoutError } from 'puppeteer';
-import { closeBrowser, initializeBrowser } from './browser/index.js';
-import { filterEventByBasicData } from './filtering/filter-basic-data.js';
-import { filterEventsMatchingRules } from './filtering/filter-details.js';
-import { getEnabledRules } from './rules/index.js';
+import { closeBrowser, initializeBrowser } from './browser.js';
+import { filterEventByBasicData } from './events-filtering.js';
+import { getEnabledRules } from './rules.js';
 import { authenticate } from './scraping/auth.js';
 import { bookEvent } from './scraping/book.js';
 import { getEventsBasicData } from './scraping/event-basics.js';
 import { getEventDetails } from './scraping/event-details.js';
-import { BookedEventsStorage } from './storage/index.js';
-import * as Env from './utils/env.js';
-import { groupBy } from './utils/group.js';
-import * as Logger from './utils/logger.js';
+import { BookedEventsStorage } from './storage.js';
+import { tryCatch } from './utils.js';
+import * as Env from './env.js';
+import * as Logger from './logger.js';
 
 const main = async () => {
-    await safeExecute(executeWorkflow, scheduleNextEvaluation);
-};
-
-const safeExecute = async (fn, finallyFn = () => {}) => {
-    try {
-        await fn();
-    } catch (error) {
-        if (error instanceof TimeoutError) {
-            Logger.warning(`Timeout error occurred. Skipping...`);
-            return;
-        }
-
-        Logger.error(`${error}\n${error.stack}`);
-    } finally {
-        await finallyFn();
-    }
+    const [error] = await tryCatch(executeWorkflow);
+    if (error) handleMainError(error);
+    scheduleNextEvaluation();
 };
 
 const executeWorkflow = async () => {
     const { browser, page } = await initializeBrowser();
-    await safeExecute(
-        () => runAssignmentProcess(page),
-        () => closeBrowser(browser),
-    );
+    await runAssignmentProcess(page);
+    await closeBrowser(browser);
 };
 
 const runAssignmentProcess = async page => {
@@ -47,6 +31,9 @@ const runAssignmentProcess = async page => {
 
     const eventsBasicData = await getEventsBasicData(page);
     const filteredEvents = filterEventByBasicData(eventsBasicData, rules);
+    Logger.debug(
+        `Found events: ${eventsBasicData.length}. Filtered events: ${filteredEvents.length}.`,
+    );
 
     if (filteredEvents.length === 0) return;
 
@@ -66,10 +53,12 @@ const getEventsDetails = async (page, events) => {
 
     for (const event of events) {
         // When an error occurs during event details retrieval, we don't want to stop the whole process, just omit the event.
-        await safeExecute(async () => {
-            const details = await getEventDetails(page, event);
+        const [error, details] = await tryCatch(() => getEventDetails(page, event));
+        if (error) {
+            Logger.warning(`Error retrieving event details: ${error}`);
+        } else {
             eventsWithDetails.push(details);
-        });
+        }
     }
 
     Logger.debug(`Found events with details: ${eventsWithDetails.length}`);
@@ -94,7 +83,7 @@ const filterEventsBySingleRulePrinciple = (events, rules) => {
     const filteredEvents = new Set();
 
     for (const rule of rules) {
-        const eventsForRule = filterEventsMatchingRules(events, [rule]);
+        const eventsForRule = filterEventByBasicData(events, [rule]);
 
         if (rule.multi) {
             for (const event of eventsForRule) {
@@ -118,7 +107,7 @@ const filterEventsBySingleRulePrinciple = (events, rules) => {
  * Book events only in one location per day.
  */
 const bookEventsUsingLocationRestriction = async (events, page) => {
-    const eventsByDate = groupBy(events, event => event.date);
+    const eventsByDate = Object.groupBy(events, event => event.date);
 
     for (const event of events) {
         const eventsFromTheSameDate = eventsByDate[event.date];
@@ -137,15 +126,14 @@ const bookEventsUsingLocationRestriction = async (events, page) => {
 };
 
 const executeEventBooking = async (event, page) => {
-    await safeExecute(
-        () => bookEvent(event, page),
-        () => {
-            // Even if booking fails, mark the event as assigned to prevent further attempts.
-            // It's important to avoid booking the same event multiple times!
-            BookedEventsStorage.add(event);
-            event.assigned = true;
-        },
-    );
+    // Even if booking fails, mark the event as assigned to prevent further attempts.
+    // It's important to avoid booking the same event multiple times!
+    const [error] = await tryCatch(() => bookEvent(event, page));
+    if (error) {
+        Logger.warning(`Error booking event: ${error}`);
+    }
+    BookedEventsStorage.add(event);
+    event.assigned = true;
 };
 
 const scheduleNextEvaluation = () => {
@@ -155,6 +143,15 @@ const scheduleNextEvaluation = () => {
     Logger.debug(`Next evaluation in ${minutesToNextEvaluation} minutes.`);
 
     setTimeout(main, timeToNextEvaluation);
+};
+
+const handleMainError = error => {
+    if (error instanceof TimeoutError) {
+        Logger.warning(`Timeout error occurred. Skipping...`);
+        return;
+    }
+
+    Logger.error(`${error}\n${error.stack}`);
 };
 
 export { main };

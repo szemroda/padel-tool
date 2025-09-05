@@ -1,5 +1,5 @@
-import * as Env from '../utils/env.js';
-import * as Logger from '../utils/logger.js';
+import * as Env from '../env.js';
+import * as Logger from '../logger.js';
 
 const bookEvent = async (event, page) => {
     const discountOption = Env.get('USE_DISCOUNT_CARD', 'false') === 'true' ? '329' : '';

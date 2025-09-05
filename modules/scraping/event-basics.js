@@ -1,5 +1,5 @@
-import { addDays } from '../utils/dates.js';
-import * as Logger from '../utils/logger.js';
+import { addDays } from '../dates.js';
+import * as Logger from '../logger.js';
 
 function extractEventsData(text) {
     const eventsMarker = 'events: [';
@@ -165,10 +165,6 @@ const getEventsFromLocation = async (page, location) => {
 const getEventsBasicData = async page => {
     const eventsGdynia = await getEventsFromLocation(page, 'Gdynia');
     const eventsGdansk = await getEventsFromLocation(page, 'Gdansk');
-
-    Logger.debug(
-        `Found events in Gdynia: ${eventsGdynia.length}, in Gdansk: ${eventsGdansk.length}.`,
-    );
 
     return [...eventsGdynia, ...eventsGdansk];
 };

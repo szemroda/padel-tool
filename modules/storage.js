@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'path';
-import * as Env from '../utils/env.js';
+import * as Env from './env.js';
 
 const filePath = Env.get('BOOKED_EVENTS_STORAGE_PATH');
 
