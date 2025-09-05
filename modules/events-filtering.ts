@@ -1,4 +1,4 @@
-import { addDays, createDateComparator } from './dates.js';
+import { addDays, createDateComparator } from './dates.ts';
 
 const filterEventByBasicData = (events, rules) => {
     if (rules.length === 0 || events.length === 0) return [];

@@ -1,5 +1,5 @@
-import { addDays } from '../dates.js';
-import * as Logger from '../logger.js';
+import { addDays } from '../dates.ts';
+import * as Logger from '../logger.ts';
 
 function extractEventsData(text) {
     const eventsMarker = 'events: [';

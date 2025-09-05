@@ -1,5 +1,5 @@
-import * as Env from '../env.js';
-import * as Logger from '../logger.js';
+import * as Env from '../env.ts';
+import * as Logger from '../logger.ts';
 
 const authenticate = async page => {
     await page.goto('https://kluby.org/logowanie?page=/padel');

@@ -1,4 +1,4 @@
-FROM node:22-slim AS base
+FROM node:24-slim AS base
 
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 

@@ -1,4 +1,4 @@
-import * as Env from './env.js';
+import * as Env from './env.ts';
 
 const getLogTimestamp = () => {
     const date = new Date();

@@ -1,13 +1,13 @@
 import fs from 'node:fs';
 import path from 'path';
-import * as Env from './env.js';
+import * as Env from './env.ts';
 
 const filePath = Env.get('BOOKED_EVENTS_STORAGE_PATH');
 
 const getBookedEventLinks = () => {
     if (!fs.existsSync(filePath)) return [];
 
-    const bookedEvents = fs.readFileSync(filePath);
+    const bookedEvents = fs.readFileSync(filePath, 'utf-8');
 
     try {
         // Prevent parsing empty file or invalid JSON.

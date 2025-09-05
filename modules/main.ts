@@ -1,15 +1,15 @@
 import { TimeoutError } from 'puppeteer';
-import { closeBrowser, initializeBrowser } from './browser.js';
-import { filterEventByBasicData } from './events-filtering.js';
-import { getEnabledRules } from './rules.js';
-import { authenticate } from './scraping/auth.js';
-import { bookEvent } from './scraping/book.js';
-import { getEventsBasicData } from './scraping/event-basics.js';
-import { getEventDetails } from './scraping/event-details.js';
-import { BookedEventsStorage } from './storage.js';
-import { tryCatch } from './utils.js';
-import * as Env from './env.js';
-import * as Logger from './logger.js';
+import { closeBrowser, initializeBrowser } from './browser.ts';
+import * as Env from './env.ts';
+import { filterEventByBasicData } from './events-filtering.ts';
+import * as Logger from './logger.ts';
+import { getEnabledRules } from './rules.ts';
+import { authenticate } from './scraping/auth.ts';
+import { bookEvent } from './scraping/book.ts';
+import { getEventsBasicData } from './scraping/event-basics.ts';
+import { getEventDetails } from './scraping/event-details.ts';
+import { BookedEventsStorage } from './storage.ts';
+import { tryCatch } from './utils.ts';
 
 const main = async () => {
     const [error] = await tryCatch(executeWorkflow);

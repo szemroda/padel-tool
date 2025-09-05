@@ -2,10 +2,13 @@
     "name": "padel-tool",
     "version": "0.0.0",
     "description": "",
-    "main": "index.js",
+    "main": "index.ts",
     "type": "module",
+    "engines": {
+        "node": ">=24.0.0"
+    },
     "scripts": {
-        "start": "node index.js"
+        "start": "node index.ts"
     },
     "author": "",
     "license": "ISC",

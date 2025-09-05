@@ -1,6 +1,6 @@
 import puppeteer from 'puppeteer';
-import * as Env from './env.js';
-import * as Logger from './logger.js';
+import * as Env from './env.ts';
+import * as Logger from './logger.ts';
 
 const initializeBrowser = async () => {
     const browser = await puppeteer.launch({
