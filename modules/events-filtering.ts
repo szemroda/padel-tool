@@ -1,4 +1,5 @@
 import { addDays, createDateComparator } from './dates.ts';
+import * as Env from './env.ts';
 
 const filterEventByBasicData = (events, rules) => {
     if (rules.length === 0 || events.length === 0) return [];
@@ -18,7 +19,9 @@ const filterEventByBasicData = (events, rules) => {
 
 const isEventBasicDataMatchingRule = (event, rule) => {
     return (
-        createDateComparator(addDays(new Date(), 1)).isSameOrBefore(event.start, 'day') && // Only events from tomorrow on
+        createDateComparator(
+            addDays(new Date(), +Env.get('EVENTS_FROM_X_DAYS_ON', '1')),
+        ).isSameOrBefore(event.start, 'day') && // Prevent last-minute sign-ups
         isEventMatchingPlace(event, rule.conditions.place) &&
         isEventDateMatchingDayOfWeek(event.start, rule.conditions.dayOfWeek) &&
         isTextMatchingPatterns(event.title, rule.conditions.titlePatterns) &&
