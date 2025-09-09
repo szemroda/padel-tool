@@ -196,9 +196,12 @@ const getEventsFromLocation = async (page: puppeteer.Page, location: 'Gdansk' | 
     return mapRawEventsToValidatedEvents(allEvents);
 };
 
-export const getEventsBasicData = async (page: puppeteer.Page) => {
-    const eventsGdynia = await getEventsFromLocation(page, 'Gdynia');
-    const eventsGdansk = await getEventsFromLocation(page, 'Gdansk');
-
-    return [...eventsGdynia, ...eventsGdansk];
+export const getEventsBasicData = async (
+    page: puppeteer.Page,
+    locations: ('Gdynia' | 'Gdansk')[],
+) => {
+    const eventsByLocation = await Promise.all(
+        locations.map(location => getEventsFromLocation(page, location)),
+    );
+    return eventsByLocation.flat();
 };

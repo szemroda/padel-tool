@@ -1,17 +1,17 @@
+import type puppeteer from 'puppeteer';
 import { TimeoutError } from 'puppeteer';
 import { closeBrowser, initializeBrowser } from './browser.ts';
+import { env } from './env.ts';
 import { filterEventByBasicData } from './events-filtering.ts';
 import * as Logger from './logger.ts';
 import { getEnabledRules } from './rules.ts';
+import { type Event, type Rule } from './schemas.ts';
 import { authenticate } from './scraping/auth.ts';
 import { bookEvent } from './scraping/book.ts';
 import { getEventsBasicData } from './scraping/event-basics.ts';
 import { getEventDetails } from './scraping/event-details.ts';
 import { BookedEventsStorage } from './storage.ts';
 import { tryCatch } from './utils.ts';
-import { env } from './env.ts';
-import type puppeteer from 'puppeteer';
-import { type Event, type Rule } from './schemas.ts';
 
 export const main = async () => {
     const [error] = await tryCatch(executeWorkflow);
@@ -27,11 +27,12 @@ const executeWorkflow = async () => {
 
 const runAssignmentProcess = async (page: puppeteer.Page) => {
     const rules = getEnabledRules();
+    const locations = rules.map(rule => rule.conditions.place);
     if (rules.length === 0) {
         return;
     }
 
-    const eventsBasicData = await getEventsBasicData(page);
+    const eventsBasicData = await getEventsBasicData(page, locations);
     const filteredEvents = filterEventByBasicData(eventsBasicData, rules);
     Logger.debug(
         `Found events: ${eventsBasicData.length}. Filtered events: ${filteredEvents.length}.`,
