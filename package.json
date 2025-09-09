@@ -8,20 +8,20 @@
         "node": ">=24.0.0"
     },
     "scripts": {
-        "start": "node index.ts"
+        "start": "dotenvx run -- node index.ts"
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
         "@t3-oss/env-core": "^0.13.8",
         "dayjs": "^1.11.12",
-        "dotenv": "^16.4.5",
         "firebase": "^10.12.3",
         "puppeteer": "^22.12.1",
         "zod": "^4.1.5"
     },
     "devDependencies": {
-        "prettier": "3.3.3",
+        "@dotenvx/dotenvx": "^1.49.0",
+        "prettier": "^3.6.2",
         "typescript": "^5.9.2"
     }
 }
