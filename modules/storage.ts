@@ -1,10 +1,14 @@
 import fs from 'node:fs';
 import path from 'path';
-import * as Env from './env.ts';
+import { env } from './env.ts';
+import { z } from 'zod';
+import type { Event } from './schemas.ts';
 
-const filePath = Env.get('BOOKED_EVENTS_STORAGE_PATH');
+type StoredData = string[];
 
-const getBookedEventLinks = () => {
+const filePath = env.BOOKED_EVENTS_STORAGE_PATH;
+
+const getBookedEventLinks = (): StoredData => {
     if (!fs.existsSync(filePath)) return [];
 
     const bookedEvents = fs.readFileSync(filePath, 'utf-8');
@@ -17,11 +21,11 @@ const getBookedEventLinks = () => {
     }
 };
 
-const addBookedEvent = event => {
+const addBookedEvent = (event: Event) => {
     addBookedEvents([event]);
 };
 
-const addBookedEvents = events => {
+const addBookedEvents = (events: Event[]) => {
     const links = new Set(getBookedEventLinks());
     events.forEach(event => links.add(event.link.trim()));
     const dir = path.dirname(filePath);
@@ -29,10 +33,8 @@ const addBookedEvents = events => {
     fs.writeFileSync(filePath, JSON.stringify(Array.from(links)));
 };
 
-const BookedEventsStorage = {
+export const BookedEventsStorage = {
     get: getBookedEventLinks,
     add: addBookedEvent,
     addMany: addBookedEvents,
 };
-
-export { BookedEventsStorage };

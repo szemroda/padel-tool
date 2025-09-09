@@ -1,6 +1,5 @@
 import { TimeoutError } from 'puppeteer';
 import { closeBrowser, initializeBrowser } from './browser.ts';
-import * as Env from './env.ts';
 import { filterEventByBasicData } from './events-filtering.ts';
 import * as Logger from './logger.ts';
 import { getEnabledRules } from './rules.ts';
@@ -10,8 +9,11 @@ import { getEventsBasicData } from './scraping/event-basics.ts';
 import { getEventDetails } from './scraping/event-details.ts';
 import { BookedEventsStorage } from './storage.ts';
 import { tryCatch } from './utils.ts';
+import { env } from './env.ts';
+import type puppeteer from 'puppeteer';
+import { type Event, type Rule } from './schemas.ts';
 
-const main = async () => {
+export const main = async () => {
     const [error] = await tryCatch(executeWorkflow);
     if (error) handleMainError(error);
     scheduleNextEvaluation();
@@ -23,7 +25,7 @@ const executeWorkflow = async () => {
     await closeBrowser(browser);
 };
 
-const runAssignmentProcess = async page => {
+const runAssignmentProcess = async (page: puppeteer.Page) => {
     const rules = getEnabledRules();
     if (rules.length === 0) {
         return;
@@ -48,7 +50,7 @@ const runAssignmentProcess = async page => {
     await bookEventsUsingLocationRestriction(filteredEventDetails, page);
 };
 
-const getEventsDetails = async (page, events) => {
+const getEventsDetails = async (page: puppeteer.Page, events: Event[]) => {
     const eventsWithDetails = [];
 
     for (const event of events) {
@@ -66,7 +68,7 @@ const getEventsDetails = async (page, events) => {
     return eventsWithDetails;
 };
 
-const attachStoredDataToEvents = events => {
+const attachStoredDataToEvents = (events: Event[]) => {
     BookedEventsStorage.addMany(events.filter(event => event.assigned));
     const eventsToUpdate = events.map(event => ({ ...event }));
     const bookedEvents = new Set(BookedEventsStorage.get());
@@ -79,8 +81,8 @@ const attachStoredDataToEvents = events => {
 /**
  * Prevent booking multiple events for the same rule unless it's allowed by the 'multi' flag.
  */
-const filterEventsBySingleRulePrinciple = (events, rules) => {
-    const filteredEvents = new Set();
+const filterEventsBySingleRulePrinciple = (events: Event[], rules: Rule[]) => {
+    const filteredEvents = new Set<Event>();
 
     for (const rule of rules) {
         const eventsForRule = filterEventByBasicData(events, [rule]);
@@ -106,7 +108,7 @@ const filterEventsBySingleRulePrinciple = (events, rules) => {
 /**
  * Book events only in one location per day.
  */
-const bookEventsUsingLocationRestriction = async (events, page) => {
+const bookEventsUsingLocationRestriction = async (events: Event[], page: puppeteer.Page) => {
     const eventsByDate = Object.groupBy(events, event => event.date);
 
     for (const event of events) {
@@ -125,7 +127,7 @@ const bookEventsUsingLocationRestriction = async (events, page) => {
     }
 };
 
-const executeEventBooking = async (event, page) => {
+const executeEventBooking = async (event: Event, page: puppeteer.Page) => {
     // Even if booking fails, mark the event as assigned to prevent further attempts.
     // It's important to avoid booking the same event multiple times!
     const [error] = await tryCatch(() => bookEvent(event, page));
@@ -137,7 +139,7 @@ const executeEventBooking = async (event, page) => {
 };
 
 const scheduleNextEvaluation = () => {
-    const minutesToNextEvaluation = +Env.get('INTERVAL_MINUTES', 5);
+    const minutesToNextEvaluation = env.INTERVAL_MINUTES;
     const timeToNextEvaluation = 60_000 * minutesToNextEvaluation;
 
     Logger.debug(`Next evaluation in ${minutesToNextEvaluation} minutes.`);
@@ -145,7 +147,7 @@ const scheduleNextEvaluation = () => {
     setTimeout(main, timeToNextEvaluation);
 };
 
-const handleMainError = error => {
+const handleMainError = (error: Error) => {
     if (error instanceof TimeoutError) {
         Logger.warning(`Timeout error occurred. Skipping...`);
         return;
@@ -153,5 +155,3 @@ const handleMainError = error => {
 
     Logger.error(`${error}\n${error.stack}`);
 };
-
-export { main };

@@ -3,16 +3,18 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore.js';
 
 dayjs.extend(isSameOrBefore);
 
-const createDateComparator = date => {
+type DateLike = Date | string | number;
+
+export const createDateComparator = (date: DateLike) => {
     const day = dayjs(date);
 
     return {
-        isSameOrBefore: (otherDate, unit) => day.isSameOrBefore(otherDate, unit),
+        isSameOrBefore: (otherDate: DateLike, unit: dayjs.UnitType) =>
+            day.isSameOrBefore(otherDate, unit),
     };
 };
 
-const isValidDate = date => dayjs(date).isValid();
-
-const addDays = (date, days) => dayjs(date).add(days, 'day').toDate();
-
-export { addDays, createDateComparator, isValidDate };
+export const isValidDate = (date: DateLike) => dayjs(date).isValid();
+export const addDays = (date: DateLike, days: number) => dayjs(date).add(days, 'day').toDate();
+export const toIsoDateString = (date: DateLike) => dayjs(date).format('YYYY-MM-DD');
+export const toIsoDateTimeString = (date: DateLike) => dayjs(date).toDate().toISOString();

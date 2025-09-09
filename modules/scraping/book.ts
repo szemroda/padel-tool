@@ -1,8 +1,10 @@
-import * as Env from '../env.ts';
+import type puppeteer from 'puppeteer';
+import { env } from '../env.ts';
 import * as Logger from '../logger.ts';
+import type { Event } from '../schemas.ts';
 
-const bookEvent = async (event, page) => {
-    const discountOption = Env.get('USE_DISCOUNT_CARD', 'false') === 'true' ? '329' : '';
+export const bookEvent = async (event: Event, page: puppeteer.Page) => {
+    const discountOption = env.USE_DISCOUNT_CARD ? '329' : '';
 
     Logger.debug(`Booking event: ${event.link}`);
     await page.goto(`${event.link}/rezerwuj`);
@@ -27,5 +29,3 @@ const bookEvent = async (event, page) => {
 
     Logger.debug(`Event booked: ${event.link}`);
 };
-
-export { bookEvent };

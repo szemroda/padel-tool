@@ -1,12 +1,11 @@
 import puppeteer from 'puppeteer';
-import * as Env from './env.ts';
+import { env } from './env.ts';
 import * as Logger from './logger.ts';
 
-const initializeBrowser = async () => {
+export const initializeBrowser = async () => {
     const browser = await puppeteer.launch({
         headless: true,
-        args: Env.get('PUPPETEER_BROWSER_ARGS', '')
-            .split(';')
+        args: env.PUPPETEER_BROWSER_ARGS.split(';')
             .map(arg => arg.trim())
             .filter(arg => arg),
     });
@@ -16,9 +15,7 @@ const initializeBrowser = async () => {
     return { browser, page };
 };
 
-const closeBrowser = async browser => {
+export const closeBrowser = async (browser: puppeteer.Browser) => {
     await browser.close();
     Logger.debug('Browser closed');
 };
-
-export { closeBrowser, initializeBrowser };

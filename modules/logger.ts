@@ -1,4 +1,4 @@
-import * as Env from './env.ts';
+import { env } from './env.ts';
 
 const getLogTimestamp = () => {
     const date = new Date();
@@ -13,26 +13,27 @@ const LOG_LEVELS = {
     DEBUG: 1,
     WARNING: 2,
     ERROR: 3,
-};
+} as const;
 const NATIVE_LOGGERS = {
     [LOG_LEVELS.DEBUG]: console.debug,
     [LOG_LEVELS.WARNING]: console.warn,
     [LOG_LEVELS.ERROR]: console.error,
-};
+} as const;
 
-const logLevel = Env.get('LOG_LEVEL', 'ERROR');
+type LogLevel = (typeof LOG_LEVELS)[keyof typeof LOG_LEVELS];
+
+const logLevel = env.LOG_LEVEL;
 const logLevelNumber = LOG_LEVELS[logLevel];
-const isLogLevelEnabled = level => level >= logLevelNumber;
-const getLogLevelName = level => Object.keys(LOG_LEVELS).find(key => LOG_LEVELS[key] === level);
-const getLogPrefix = level => `[${getLogLevelName(level)}] {${getLogTimestamp()}}`;
-const createLogger = level => text => {
+const isLogLevelEnabled = (level: LogLevel) => level >= logLevelNumber;
+const getLogLevelName = (level: LogLevel) =>
+    Object.keys(LOG_LEVELS).find(key => LOG_LEVELS[key] === level);
+const getLogPrefix = (level: LogLevel) => `[${getLogLevelName(level)}] {${getLogTimestamp()}}`;
+const createLogger = (level: LogLevel) => (text: string) => {
     if (isLogLevelEnabled(level)) {
         NATIVE_LOGGERS[level](`${getLogPrefix(level)} - ${text}`);
     }
 };
 
-const debug = createLogger(LOG_LEVELS.DEBUG);
-const warning = createLogger(LOG_LEVELS.WARNING);
-const error = createLogger(LOG_LEVELS.ERROR);
-
-export { debug, error, warning };
+export const debug = createLogger(LOG_LEVELS.DEBUG);
+export const warning = createLogger(LOG_LEVELS.WARNING);
+export const error = createLogger(LOG_LEVELS.ERROR);

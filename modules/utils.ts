@@ -1,4 +1,7 @@
-const tryCatch = async fn => {
+type TryCatchFn<T> = () => Promise<T> | T;
+type TryCatchResult<T> = [null, T] | [Error, null];
+
+export const tryCatch = async <T>(fn: TryCatchFn<T>): Promise<TryCatchResult<T>> => {
     try {
         const result = await fn();
         return [null, result];
@@ -6,5 +9,3 @@ const tryCatch = async fn => {
         return [error, null];
     }
 };
-
-export { tryCatch };

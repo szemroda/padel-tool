@@ -13,12 +13,15 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@t3-oss/env-core": "^0.13.8",
         "dayjs": "^1.11.12",
         "dotenv": "^16.4.5",
         "firebase": "^10.12.3",
-        "puppeteer": "^22.12.1"
+        "puppeteer": "^22.12.1",
+        "zod": "^4.1.5"
     },
     "devDependencies": {
-        "prettier": "3.3.3"
+        "prettier": "3.3.3",
+        "typescript": "^5.9.2"
     }
 }

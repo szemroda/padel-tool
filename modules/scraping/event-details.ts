@@ -1,8 +1,10 @@
-import * as Env from '../env.ts';
+import type puppeteer from 'puppeteer';
+import { env } from '../env.ts';
+import type { Event } from '../schemas.ts';
 
-const getEventDetails = async (page, event) => {
+export const getEventDetails = async (page: puppeteer.Page, event: Event) => {
     const url = new URL(event.link);
-    const userName = Env.get('KLUBY_USER_NAME');
+    const userName = env.KLUBY_USER_NAME;
     await page.goto(`${url.origin}${url.pathname}/uczestnicy`);
     const badge = await page.$(`h4 span.badge`);
     const isSlotAvailable = await page.evaluate(participantsCountBadge => {
@@ -41,5 +43,3 @@ const extractParticipantsNames = async (page, elements) => {
 
     return names;
 };
-
-export { getEventDetails };

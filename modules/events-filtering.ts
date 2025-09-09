@@ -1,10 +1,11 @@
 import { addDays, createDateComparator } from './dates.ts';
-import * as Env from './env.ts';
+import { env } from './env.ts';
+import type { Event, Rule } from './schemas.ts';
 
-const filterEventByBasicData = (events, rules) => {
+export const filterEventByBasicData = (events: Event[], rules: Rule[]) => {
     if (rules.length === 0 || events.length === 0) return [];
 
-    const eventsMatchingRules = new Set();
+    const eventsMatchingRules = new Set<Event>();
 
     for (const rule of rules) {
         for (const event of events) {
@@ -17,13 +18,14 @@ const filterEventByBasicData = (events, rules) => {
     return Array.from(eventsMatchingRules);
 };
 
-const isEventBasicDataMatchingRule = (event, rule) => {
+const isEventBasicDataMatchingRule = (event: Event, rule: Rule) => {
     return (
-        createDateComparator(
-            addDays(new Date(), +Env.get('EVENTS_FROM_X_DAYS_ON', '1')),
-        ).isSameOrBefore(event.start, 'day') && // Prevent last-minute sign-ups
+        createDateComparator(addDays(new Date(), env.EVENTS_FROM_X_DAYS_ON)).isSameOrBefore(
+            event.start,
+            'day',
+        ) && // Prevent last-minute sign-ups
         isEventMatchingPlace(event, rule.conditions.place) &&
-        isEventDateMatchingDayOfWeek(event.start, rule.conditions.dayOfWeek) &&
+        isEventDateMatchingDayOfWeek(new Date(event.start), rule.conditions.dayOfWeek) &&
         isTextMatchingPatterns(event.title, rule.conditions.titlePatterns) &&
         isMatchingTimeSlot(
             { start: new Date(event.start), end: new Date(event.end) },
@@ -37,27 +39,30 @@ const isEventBasicDataMatchingRule = (event, rule) => {
     );
 };
 
-const isTextMatchingPatterns = (text, patterns) =>
+type TextMatchingPattern = Rule['conditions']['titlePatterns'][number];
+const isTextMatchingPatterns = (text: string, patterns: TextMatchingPattern[]) =>
     !patterns ||
     patterns.length === 0 ||
     patterns.every(pattern => isTextMatchingPattern(text, pattern));
 
-const isTextMatchingPattern = (text, pattern) => {
+const isTextMatchingPattern = (text: string, pattern: TextMatchingPattern) => {
     if (typeof pattern === 'string') return new RegExp(pattern, 'gmi').test(text);
 
     const isMatchingPattern = new RegExp(pattern.pattern, 'gmi').test(text);
     return pattern.negated ? !isMatchingPattern : isMatchingPattern;
 };
 
-const isEventDateMatchingDayOfWeek = (date, dayOfWeek) => {
+const isEventDateMatchingDayOfWeek = (date: Date, dayOfWeek: number | number[]) => {
     if (Array.isArray(dayOfWeek)) return dayOfWeek.some(day => isDateMatchingDayOfWeek(date, day));
 
     return isDateMatchingDayOfWeek(date, dayOfWeek);
 };
 
-const isDateMatchingDayOfWeek = (date, dayOfWeek) => new Date(date).getDay() === dayOfWeek;
+const isDateMatchingDayOfWeek = (date: Date, dayOfWeek: number) =>
+    new Date(date).getDay() === dayOfWeek;
 
-const isEventMatchingPlace = (event, place) => event.place === place;
+const isEventMatchingPlace = (event: Event, place: Rule['conditions']['place']) =>
+    event.place === place;
 
 /**
  *
@@ -96,5 +101,3 @@ const parseTime = timeString => {
     const seconds = parts[2] ? parseInt(parts[2], 10) : 0;
     return { hours, minutes, seconds };
 };
-
-export { filterEventByBasicData };

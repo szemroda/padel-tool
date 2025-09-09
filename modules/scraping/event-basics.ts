@@ -1,7 +1,10 @@
-import { addDays } from '../dates.ts';
+import type puppeteer from 'puppeteer';
+import { addDays, toIsoDateString, toIsoDateTimeString } from '../dates.ts';
 import * as Logger from '../logger.ts';
+import { eventSchema, participantsDataSchema, type Event } from '../schemas.ts';
+import { tryCatch } from '../utils.ts';
 
-function extractEventsData(text) {
+function extractEventsData(text: string): Event[] {
     const eventsMarker = 'events: [';
     const eventsStartIndex = text.indexOf(eventsMarker);
 
@@ -84,7 +87,7 @@ function extractEventsData(text) {
     }
 }
 
-const extractParticipantData = htmlString => {
+const extractParticipantData = (htmlString: string) => {
     // This regex looks for a <span> tag with a class containing "badge".
     // It then captures the two numbers separated by a slash inside that tag.
     // (\d+) captures one or more digits.
@@ -106,17 +109,20 @@ const extractParticipantData = htmlString => {
     return null;
 };
 
-const extractIsSlotAvailable = htmlString => {
-    const participantData = extractParticipantData(htmlString);
+const extractIsSlotAvailable = (htmlString: string, eventAddress: string) => {
+    const { error, data: participantData } = participantsDataSchema.safeParse(
+        extractParticipantData(htmlString),
+    );
 
-    if (!participantData) {
+    if (error) {
+        Logger.warning(`Invalid participant data of ${eventAddress}.\n\tHTML: ${htmlString}`);
         return undefined;
     }
 
     return participantData.participants < participantData.total;
 };
 
-const getEventsBasicDataFromAddress = async (page, address) => {
+const getEventsBasicDataFromAddress = async (page: puppeteer.Page, address: string) => {
     await page.goto(address);
 
     const scripts = await page.$$('script');
@@ -128,9 +134,11 @@ const getEventsBasicDataFromAddress = async (page, address) => {
             const events = extractEventsData(text);
             return events.map(x => ({
                 ...x,
-                date: new Date(x.start).toLocaleDateString(),
+                start: toIsoDateTimeString(x.start),
+                end: toIsoDateTimeString(x.end),
+                date: toIsoDateString(x.start),
                 link: `https://kluby.org${x.url}`.split('?')[0],
-                isSlotAvailable: extractIsSlotAvailable(x.description),
+                isSlotAvailable: extractIsSlotAvailable(x.description, address),
             }));
         }
     }
@@ -139,12 +147,36 @@ const getEventsBasicDataFromAddress = async (page, address) => {
     return [];
 };
 
-const useDateLeadingZeroFormat = num => (num < 10 ? `0${num}` : `${num}`);
+const mapRawEventsToValidatedEvents = async (events: Event[]) => {
+    const validatedEvents: Event[] = [];
+    const eventsValidationErrors: string[] = [];
 
-const getDateQueryParam = date =>
+    for (const event of events) {
+        const [err, validatedEvent] = await tryCatch(() => eventSchema.parse(event));
+
+        if (err) {
+            eventsValidationErrors.push(err.message);
+            continue;
+        }
+
+        validatedEvents.push(validatedEvent);
+    }
+
+    if (eventsValidationErrors.length > 0) {
+        Logger.error(
+            `Failed to parse some events. Only valid events will be used.\n\t${eventsValidationErrors.join('\n\t')}`,
+        );
+    }
+
+    return validatedEvents;
+};
+
+const useDateLeadingZeroFormat = (num: number) => (num < 10 ? `0${num}` : `${num}`);
+
+const getDateQueryParam = (date: Date) =>
     `data_grafiku=${date.getFullYear()}-${useDateLeadingZeroFormat(date.getMonth() + 1)}-${useDateLeadingZeroFormat(date.getDate())}`;
 
-const getEventsFromLocation = async (page, location) => {
+const getEventsFromLocation = async (page: puppeteer.Page, location: 'Gdansk' | 'Gdynia') => {
     const urls = {
         Gdansk: 'https://kluby.org/padbox/wydarzenia',
         Gdynia: 'https://kluby.org/gdynia-padel-club/wydarzenia',
@@ -156,17 +188,17 @@ const getEventsFromLocation = async (page, location) => {
     const thisWeekEvents = await getEventsBasicDataFromAddress(page, thisWeekEventsUrl);
     const nextWeekEvents = await getEventsBasicDataFromAddress(page, nextWeekEventsUrl);
 
-    return [...thisWeekEvents, ...nextWeekEvents].map(event => ({
+    const allEvents = [...thisWeekEvents, ...nextWeekEvents].map(event => ({
         ...event,
         place: location,
     }));
+
+    return mapRawEventsToValidatedEvents(allEvents);
 };
 
-const getEventsBasicData = async page => {
+export const getEventsBasicData = async (page: puppeteer.Page) => {
     const eventsGdynia = await getEventsFromLocation(page, 'Gdynia');
     const eventsGdansk = await getEventsFromLocation(page, 'Gdansk');
 
     return [...eventsGdynia, ...eventsGdansk];
 };
-
-export { getEventsBasicData };
