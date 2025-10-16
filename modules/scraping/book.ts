@@ -19,7 +19,8 @@ export const bookEvent = async (event: Event, page: puppeteer.Page) => {
     Logger.debug(`Starting payment: ${event.link}`);
     // TODO Check how it works with non immediately payable events
 
-    // Selecting events - all events selected by default
+    await page.locator('#odznacz_wszystko2').click(); // Uncheck all events and tournaments
+    await page.locator('input[type=checkbox][czekboks=oplaty_wydarzenia]').click(); // Check just events without tournaments and others
     await page.locator('#czy_saldo').click(); // Use the club wallet
     await page.locator('form button[type=submit]').click();
     await page.waitForNavigation({ waitUntil: 'networkidle0' });
